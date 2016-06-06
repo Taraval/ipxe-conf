@@ -1,0 +1,77 @@
+#!ipxe
+
+##### HEADER VARS #####
+set boot-ip 172.0.0.1
+set url-boot http://${boot-ip}/pxe
+set url-menu ${url-boot}/os/main.ipxe
+set url-mac ${url-boot}/mac
+
+
+set dragon 172.0.0.1
+set dalocation http://${dragon}/pxe
+
+############################ INSTALLER Ubuntu Server MENU #########################
+:menu-default
+menu Ubuntu Server Operating System
+item --gap --             ------------------------- Automatic Installation --------------------------------
+item --key d install-auto_u-14.04.1     (d) Install Ubuntu 14.04.1-Testing
+item --key c install-auto_u-12.04.5     (c) Install Ubuntu 12.04.5-Testing
+item --key b install-auto_u-14.04-ga    (b) Install Ubuntu 14.04-GA
+item --key a install-auto_u-12.04.4-ga  (a) Install Ubuntu 12.04.4-GA
+item
+item --gap --             ------------------------- Manual Installation -----------------------------------
+item --key D install-manu_u-14.04.1-ga  (D) Install Ubuntu 14.04.1-Testing
+item --key C install-manu_u-12.04.5     (C) Install Ubuntu 12.04.5-Testing
+item --key B install-manu_u-14.04-ga    (B) Install Ubuntu 14.04-GA
+item --key A install-manu_u-12.04.4-ga  (A) Install Ubuntu 12.04.4-GA
+item
+item --key x back      (x) Back to top menu...
+iseq ${menu-default} menu-install && isset ${submenu-default} && goto menu-install-timed ||
+choose selected && goto ${selected} || goto start
+:menu-install-timed
+choose --timeout ${submenu-timeout} --default ${submenu-default} selected && goto ${selected} || goto start
+
+# **************************** Configuration Below *****************************
+
+:install-auto_u-12.04.4-ga
+echo Starting Ubuntu Server 12.04.1 ${archl} installer
+set base-url ${url-boot}/../SET/os/Ubuntu/12/U-12.04.4-GA/install/netboot/ubuntu-installer/amd64
+kernel ${base-url}/linux
+initrd ${base-url}/initrd.gz
+imgargs linux auto=true preseed/url=http://172.0.0.1/u.seed netcfg/get_hostname=hello debian-installer/locale=en_US
+boot || goto failed
+goto start
+
+:install-manu_u-14.04.1-ga
+echo Starting Ubuntu Server 14.04.1 ${archl} installer
+sleep 2
+set base-url ${url-boot}/../SET/os/Ubuntu/14/U-14.04.1-GA/install/netboot/ubuntu-installer/amd64
+kernel ${base-url}/linux
+initrd ${base-url}/initrd.gz
+#imgargs
+boot || goto failed
+goto start
+
+:install-manu_u-14.04-ga
+echo Starting Ubuntu Server 14.04 ${archl} installer
+sleep 2
+set base-url ${url-boot}/../SET/os/Ubuntu/14/U-14.04-GA/install/netboot/ubuntu-installer/amd64
+kernel ${base-url}/linux
+initrd ${base-url}/initrd.gz
+#imgargs
+boot || goto failed
+goto start
+
+:install-manu_u-12.04.4-ga
+echo Starting Ubuntu Server 12.04.4 ${archl} installer
+sleep 2
+set base-url ${url-boot}/../SET/os/Ubuntu/12/U-12.04.4-GA/install/netboot/ubuntu-installer/amd64
+kernel ${base-url}/linux
+initrd ${base-url}/initrd.gz
+#imgargs
+boot || goto failed
+goto start
+
+:back
+chain --replace --autofree ${url-menu}
+goto menu-default

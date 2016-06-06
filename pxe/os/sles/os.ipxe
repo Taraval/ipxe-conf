@@ -1,0 +1,41 @@
+#!ipxe
+
+##### HEADER VARS #####
+set boot-ip 172.0.0.1
+set url-boot http://${boot-ip}/pxe
+set url-menu ${url-boot}/os/main.ipxe
+set url-mac ${url-boot}/mac
+
+
+set dragon 172.0.0.1
+set dalocation http://${dragon}/pxe
+
+############################ INSTALLER SUSE Linux Enterprise Server MENU #########################
+:menu-default
+menu SUSE Linux Enterprise Operating System ${mac}
+item --gap --             ------------------------- Automatic Installation --------------------------------
+item --key d install-a-suse12		(d) Install SUSE Linux Enterprise Server 12-Beta3
+item --key c install-a-suse11.3		(c) Install SUSE Linux Enterprise Server 11 SP3-GA
+item --key b install-a-suse11.2		(b) Install SUSE Linux Enterprise Server 11 SP2-GA
+item --key a install-a-suse11.1		(a) Install SUSE Linux Enterprise Server 11 SP1-GA
+item
+item --gap --             ------------------------- Manual Installation -----------------------------------
+item --key D install-m-suse12		(D) Install SUSE Linux Enterprise Server 12-Beta3
+item --key C install-m-suse11.3		(C) Install SUSE Linux Enterprise Server 11 SP3-GA
+item --key B install-m-suse11.2		(B) Install SUSE Linux Enterprise Server 11 SP2-GA
+item --key A install-m-suse11.1		(A) Install SUSE Linux Enterprise Server 11 SP1-GA
+item
+item --key x back      (x) Back to top menu...
+iseq ${menu-default} menu-install && isset ${submenu-default} && goto menu-install-timed ||
+choose selected && goto ${selected} || goto start
+:menu-install-timed
+choose --timeout ${submenu-timeout} --default ${submenu-default} selected && goto ${selected} || goto start
+
+:install-a-ws2012r2
+echo Windows 2012R2
+sanboot ${dalocation}/../WS2012.iso || goto failed
+goto start
+
+:back
+chain --replace --autofree ${url-menu}
+goto menu-default

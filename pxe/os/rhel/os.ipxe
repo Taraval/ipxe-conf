@@ -1,0 +1,45 @@
+#!ipxe
+
+##### HEADER VARS #####
+set boot-ip 172.0.0.1
+set url-boot http://${boot-ip}/pxe
+set url-menu ${url-boot}/os/main.ipxe
+set url-mac ${url-boot}/mac
+
+
+set dragon 172.0.0.1
+set dalocation http://${dragon}/pxe
+
+############################ INSTALLER RedHat Enterprise Linux MENU #########################
+:menu-default
+menu RedHat Enterprise Linux Operating System
+item --gap --             ------------------------- Automatic Installation --------------------------------
+item --key f install-a-rhel7.0   (f) Install RedHat Enterprise Linux 7.0-GA
+item --key e install-a-rhel6.5   (e) Install RedHat Enterprise Linux 6.5-GA
+item --key d install-a-rhel6.4   (d) Install RedHat Enterprise Linux 6.4-GA
+item --key c install-a-rhel5.11  (c) Install RedHat Enterprise Linux 5.11-Testing
+item --key b install-a-rhel5.10  (b) Install RedHat Enterprise Linux 5.10-GA
+item --key a install-a-rhel5.9   (a) Install RedHat Enterprise Linux 5.9-GA
+item
+item --gap --             ------------------------- Manual Installation -----------------------------------
+item --key F install-m-rhel7.0   (F) Install RedHat Enterprise Linux 7.0-GA
+item --key E install-m-rhel6.5   (E) Install RedHat Enterprise Linux 6.5-GA
+item --key D install-m-rhel6.4   (D) Install RedHat Enterprise Linux 6.4-GA
+item --key C install-m-rhel5.11  (C) Install RedHat Enterprise Linux 5.11-Testing
+item --key B install-m-rhel5.10  (B) Install RedHat Enterprise Linux 5.10-GA
+item --key A install-m-rhel5.9   (A) Install RedHat Enterprise Linux 5.9-GA
+item
+item --key x back      (x) Back to top menu...
+iseq ${menu-default} menu-install && isset ${submenu-default} && goto menu-install-timed ||
+choose selected && goto ${selected} || goto start
+:menu-install-timed
+choose --timeout ${submenu-timeout} --default ${submenu-default} selected && goto ${selected} || goto start
+
+:install-a-ws2012r2
+echo Windows 2012R2
+sanboot ${dalocation}/../WS2012.iso || goto failed
+goto start
+
+:back
+chain --replace --autofree ${url-menu}
+goto menu-default

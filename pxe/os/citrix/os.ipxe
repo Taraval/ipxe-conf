@@ -1,0 +1,40 @@
+#!ipxe
+
+##### HEADER VARS #####
+set boot-ip 172.0.0.1
+set url-boot http://${boot-ip}/pxe
+set url-menu ${url-boot}/os/main.ipxe
+set url-mac ${url-boot}/mac
+
+
+set dragon 172.0.0.1
+set dalocation http://${dragon}/pxe
+
+############################ INSTALLER CITRIX MENU #########################
+:menu-default
+menu CiTRiX XenServer Hypervisor Operating System
+item --gap --             ------------------------- Automatic Installation --------------------------------
+item --key c install-a-xen6.2		(c) Install XenServer 6.2
+item --key b install-a-xen6.1		(b) Install XenServer 6.1
+item --key a install-a-xen6.0		(a) Install XenServer 6.0
+item
+item --gap --             ------------------------- Manual Installation -----------------------------------
+
+item --key C install-m-xen6.2		(C) Install XenServer 6.2
+item --key B install-m-xen6.1		(B) Install XenServer 6.1
+item --key A install-m-xen6.0		(A) Install XenServer 6.0
+item
+item --key x back      (x) Back to top menu...
+iseq ${menu-default} menu-install && isset ${submenu-default} && goto menu-install-timed ||
+choose selected && goto ${selected} || goto start
+:menu-install-timed
+choose --timeout ${submenu-timeout} --default ${submenu-default} selected && goto ${selected} || goto start
+
+:install-a-ws2012r2
+echo Windows 2012R2
+sanboot ${dalocation}/../WS2012.iso || goto failed
+goto start
+
+:back
+chain --replace --autofree ${url-menu}
+goto menu-default

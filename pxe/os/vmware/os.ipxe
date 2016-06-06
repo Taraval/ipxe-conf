@@ -1,0 +1,41 @@
+#!ipxe
+
+##### HEADER VARS #####
+set boot-ip 172.0.0.1
+set url-boot http://${boot-ip}/pxe
+set url-menu ${url-boot}/os/main.ipxe
+set url-mac ${url-boot}/mac
+
+
+set dragon 172.0.0.1
+set dalocation http://${dragon}/pxe
+
+############################ INSTALLER VMWARE MENU #########################
+:menu-default
+menu VMWare vSphere Hypervisor (ESXi) Operating System
+menu VMWare vSphere Hypervisor
+item --gap --             ------------------------- Automatic Installation --------------------------------
+item --key c install-a-vmware5.5u1		(b) Install VMWare 5.5 U1-GA
+item --key b install-a-vmware5.1u2		(b) Install VMWare 5.1 U2-GA
+item --key a install-a-vmware5.0u3		(a) Install VMWare 5.0 U3-GA
+item
+item --gap --             ------------------------- Manual Installation -----------------------------------
+
+item --key C install-m-vmware5.5u1		(C) Install VMWare 5.5 U1-GA
+item --key B install-m-vmware5.1u2		(B) Install VMWare 5.1 U2-GA
+item --key A install-m-vmware5.0u3		(A) Install VMWare 5.0 U3-GA
+item
+item --key x back      (x) Back to top menu...
+iseq ${menu-default} menu-install && isset ${submenu-default} && goto menu-install-timed ||
+choose selected && goto ${selected} || goto start
+:menu-install-timed
+choose --timeout ${submenu-timeout} --default ${submenu-default} selected && goto ${selected} || goto start
+
+:install-a-ws2012r2
+echo Windows 2012R2
+sanboot ${dalocation}/../WS2012.iso || goto failed
+goto start
+
+:back
+chain --replace --autofree ${url-menu}
+goto menu-default

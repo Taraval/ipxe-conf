@@ -1,0 +1,136 @@
+#!ipxe
+
+###############################################################################
+# Cisco Systems, Inc. (c) 2014
+# Team: Operating System Certification and Compatibilities
+###############################################################################
+
+# Global Var
+set dragon 172.0.0.1
+set dalocation http://${dragon}/pxe/os
+
+# Some menu defaults
+set menu-timeout 50000
+set submenu-timeout ${menu-timeout}
+isset ${menu-default} || set menu-default exit
+
+# Figure out if client is 64-bit capable
+cpuid --ext 29 && set arch x64 || set arch x86
+cpuid --ext 29 && set archl amd64 || set archl i386
+
+############################ MAIN MENU ####################################
+
+:start
+menu Cisco Common Boot Installable (${mac})
+item --gap --             ------------------------- Operating systems ------------------------------
+item --key w menu-win	    (w) Microsoft Windows Server...
+item --key u menu-ubuntu	(u) Canonical Ubuntu Server...
+item --key r menu-rhel		(r) RedHat Enterprise Linux...
+item --key s menu-suse		(s) SUSE Linux Enterprise Server...
+item --key o menu-ole		  (o) Oracle Linux Enterprise...
+item --key c menu-citrix	(c) CiTRiX XenServer Hypervisor...
+item --key v menu-vmware	(v) VMWare vSphere Hypervisor (ESXi)...
+item --key l menu-live		(l) Live environments...
+item --gap --             ------------------------- Tools and utilities ----------------------------
+item --key p pxelinux     Load PXELinux menu
+item --key x menu-recovery Recovery tools...
+item --key d menu-diag    Diagnostics tools...
+item --key i menu-install Installers...
+item --gap --             ------------------------- Advanced options -------------------------------
+item --key z config       Configure settings
+item shell                Drop to iPXE shell
+item reboot               Reboot computer
+item
+item --key x exit         (x) Exit menu and continue BIOS boot
+choose --timeout ${menu-timeout} --default ${menu-default} selected || goto cancel
+set menu-timeout 0
+goto ${selected}
+
+#**********************************************************************************
+#**********************************************************************************
+
+
+########################## Chain to the VMWare vSphere Hypervisor (ESXi) PXE Menu
+:menu-vmware
+chain --replace --autofree ${dalocation}/vmware/os.ipxe || goto failed
+goto start
+
+########################## Chain to the CiTRiX XenServer Hypervisor PXE Menu
+:menu-citrix
+chain --replace --autofree ${dalocation}/citrix/os.ipxe || goto failed
+goto start
+
+########################## Chain to the Oracle Linux Enterprise PXE Menu
+:menu-ole
+chain --replace --autofree ${dalocation}/ole/os.ipxe || goto failed
+goto start
+
+########################## Chain to the LIVE RAM TIME Server PXE Menu
+:menu-live
+chain --replace --autofree ${dalocation}/live/os.ipxe || goto failed
+goto start
+
+########################## Chain to the SUSE Linux Enterprise Server PXE Menu
+:menu-suse
+chain --replace --autofree ${dalocation}/sles/os.ipxe || goto failed
+goto start
+
+########################## Chain to the RedHat Enterprise Linux PXE Menu
+:menu-rhel
+chain --replace --autofree ${dalocation}/rhel/os.ipxe || goto failed
+goto start
+
+########################## Chain to the Ubuntu Server PXE Menu
+:menu-ubuntu
+chain --replace --autofree ${dalocation}/ubuntu/os.ipxe || goto failed
+goto start
+
+########################## Chain to the Microsoft Windows Server PXE Menu
+:menu-win
+chain --replace --autofree ${dalocation}/win/os.ipxe || goto failed
+goto start
+
+
+
+# Oracle VM
+#:pxelinux
+#kernel http://10.193.141.85/OVM_3.3/isolinux/vmlinuz repo=http://10.193.141.85/OVM_3.3/ network ksdevice=bootif BOOTIF=01-${netX/mac}
+#initrd http://10.193.141.85/OVM_3.3/isolinux/initrd.img
+#boot
+#goto start
+
+### Open the Configuration tab
+:config
+config
+goto start
+
+
+### Open the shell
+:shell
+echo [ mac..................: ${mac}
+echo [ ip...................: ${ip}
+echo [ netmask..............: ${netmask}
+echo [ gateway..............: ${gateway}
+echo [ dns..................: ${dns}
+echo [ domain...............: ${domain}
+echo [ dhcp-server..........: ${dhcp-server}
+echo [ syslog...............: ${syslog}
+echo [ filename.............: ${filename}
+echo [ next-server..........: ${next-server}
+echo [ hostname.............: ${hostname}
+echo [ uuid.................: ${uuid}
+echo [ serial...............: ${serial}
+echo .
+echo Type 'exit' to get back to the PXE menu.
+shell
+goto start
+
+### Reboot the PXE menu
+:reboot
+reboot
+exit
+
+
+### Exit Menu
+:exit
+exit

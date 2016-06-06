@@ -1,0 +1,15 @@
+#!ipxe
+
+set boot-ip 172.0.0.1
+set url-boot http://${boot-ip}/pxe
+set url-menu ${url-boot}/os/main.ipxe
+set url-mac ${url-boot}/mac
+
+# Global variables used by all other iPXE scripts
+#chain --autofree ${url-boot}/boot.ipxe.cfg ||
+
+# Boot <boot-url>/<boot-dir>/mac-010203040506.ipxe if script is present
+#chain --autofree ${url-mac}-${mac:hexraw}.ipxe ||
+
+# Boot <boot-url>/menu.ipxe script if all other options have been exhausted
+chain --autofree ${url-menu}

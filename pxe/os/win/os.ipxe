@@ -1,0 +1,41 @@
+#!ipxe
+
+##### HEADER VARS #####
+set boot-ip 172.0.0.1
+set url-boot http://${boot-ip}/pxe
+set url-menu ${url-boot}/os/main.ipxe
+set url-mac ${url-boot}/mac
+
+
+set dragon 172.0.0.1
+set dalocation http://${dragon}/pxe
+
+############################ INSTALLER WINDOWS MENU #########################
+:menu-default
+menu Microsoft Windows Server Operating System
+item --gap --             ------------------------- Automatic Installation --------------------------------
+item --key d install-a-ws2012r2     (d) Install Windows Server 2012 R2
+item --key c install-a-ws2012       (c) Install Windows Server 2012
+item --key b install-a-ws2008r2sp1  (b) Install Windows Server 2008 R2 SP1
+item --key a install-a-ws2008sp2    (a) Install Windows Server 2008 SP2
+item
+item --gap --             ------------------------- Manual Installation -----------------------------------
+item --key D install-m-ws2012r2     (D) Install Windows Server 2012 R2
+item --key C install-m-ws2012       (C) Install Windows Server 2012
+item --key B install-m-ws2008r2sp1  (B) Install Windows Server 2008 R2 SP1
+item --key A install-m-ws2008sp2    (A) Install Windows Server 2008 SP2
+item
+item --key x back      (x) Back to top menu...
+iseq ${menu-default} menu-install && isset ${submenu-default} && goto menu-install-timed ||
+choose selected && goto ${selected} || goto start
+:menu-install-timed
+choose --timeout ${submenu-timeout} --default ${submenu-default} selected && goto ${selected} || goto start
+
+:install-a-ws2012r2
+echo Windows 2012R2
+sanboot ${dalocation}/../WS2012.iso || goto failed
+goto start
+
+:back
+chain --replace --autofree ${url-menu}
+goto menu-default
