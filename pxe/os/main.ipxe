@@ -1,10 +1,5 @@
 #!ipxe
 
-###############################################################################
-# Cisco Systems, Inc. (c) 2014
-# Team: Operating System Certification and Compatibilities
-###############################################################################
-
 # Global Var
 set dragon 172.0.0.1
 set dalocation http://${dragon}/pxe/os
